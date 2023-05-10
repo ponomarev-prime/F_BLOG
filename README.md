@@ -15,3 +15,13 @@ FlaskBlog :: View, Create, Edit, Delete.
 
 3
 ![](.gitcontent/f_blog3.png)
+
+# Hosting
+
+It's works from Beget https://beget.com/
+
+https://f-blog.ponomarev-aa.ru/
+
+(2023-05-10)
+
+![](.gitcontent/irinastamislavovna.png)
