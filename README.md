@@ -32,6 +32,6 @@ https://f-blog.ponomarev-aa.ru/
 curl -X POST -d "title=Hello from cURL" -d "content=cURL POST запрос" https://f-blog.ponomarev-aa.ru/create
 ```
 
-![](.gitcontent/curl_post.png)
+![](.gitcontent/curl_post_x.png)
 
 
