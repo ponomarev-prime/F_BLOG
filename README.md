@@ -25,3 +25,13 @@ https://f-blog.ponomarev-aa.ru/
 (2023-05-10)
 
 ![](.gitcontent/irinastamislavovna.png)
+
+# cURL :: POST
+
+```
+curl -X POST -d "title=Hello from cURL" -d "content=cURL POST запрос" https://f-blog.ponomarev-aa.ru/create
+```
+
+![](.gitcontent/curl_post.png)
+
+
