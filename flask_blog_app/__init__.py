@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-DATABASE = './database.db'
+DATABASE = './flask_blog_app/database.db'
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
