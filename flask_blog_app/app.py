@@ -1,9 +1,15 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
+import text2telegram as t2t
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+DATABASE = './database.db'
 
 def get_db_connection():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -29,6 +35,7 @@ def index():
 @app.route('/<int:post_id>')
 def post(post_id):
     post = get_post(post_id)
+    content = post['content']
     return render_template('post.html', post=post)
 
 @app.route('/create', methods=('GET', 'POST'))
@@ -36,16 +43,32 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        passkey = request.form['passkey']
+        createkey = os.getenv('PASSKEY')
+      
+        if passkey != createkey:
+            flash('Key is wrong!')
+            chKey=False
+        else:
+            chKey=True
 
         if not title:
             flash('Title is required!')
+            chTitle=False
         else:
+            chTitle=True
+        
+        if chKey == True and chTitle==True:
             conn = get_db_connection()
             conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
                          (title, content))
             conn.commit()
             conn.close()
+            t2t.sendText2Channel(f"{title}\n{content}")
+            print(passkey)
             return redirect(url_for('index'))
+        else:
+            flash("Somthing wrong!")
     return render_template('create.html')
 
 @app.route('/<int:id>/edit', methods=('GET', 'POST'))
