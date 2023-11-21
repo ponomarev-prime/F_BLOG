@@ -35,3 +35,24 @@ curl -X POST -d "title=Hello from cURL" -d "content=cURL POST запрос" http
 ![](.gitcontent/curl_post_x.png)
 
 
+# NEXT 2023-11-21
+
+## App run
+```
+$ export PYTHONPATH=/home/[xxxx]/[yyyy]]/F_BLOG/flask_blog_app
+$ flask --app flask_blog_app run
+```
+
+## Add func for sent post to telegram
+```
+flask_blog_app/text2telegram.py
+```
+Не забудь про секреты:
+```
+flask_blog_app/.env
+
+TOKEN=
+ID_IT_SPECIAL_FORCES_GROUP=
+ID_IT_SPECIAL_FORCES_THREAD=
+PASSKEY=
+```
