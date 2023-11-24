@@ -1,4 +1,4 @@
-import sqlite3
+import mysql.connector
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 import flask_blog_app.art2telegram as a2t
@@ -6,20 +6,33 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-DATABASE = './flask_blog_app/database.db'
+db_config = {
+    'host': os.getenv('BEGET_MYSQL_SERVER'),
+    'user': os.getenv('BEGET_MYSQL_USER'),
+    'password': os.getenv('BEGET_MYSQL_PASS'),
+    'database': os.getenv('BEGET_MYSQL_DB')
+}
 
 def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
+    conn = mysql.connector.connect(**db_config)
+    conn.row_factory = mysql.connector.cursor.MySQLCursorDict
     return conn
 
 def get_post(post_id):
     conn = get_db_connection()
-    post = conn.execute('SELECT * FROM posts WHERE id = ?',
-                        (post_id,)).fetchone()
+    cursor = conn.cursor(dictionary=True)
+
+    query = 'SELECT * FROM posts WHERE id = %s'
+    cursor.execute(query, (post_id,))
+    
+    post = cursor.fetchone()
+    
+    cursor.close()
     conn.close()
+
     if post is None:
         abort(404)
+
     return post
 
 app = Flask(__name__)
@@ -28,9 +41,18 @@ app.config['SECRET_KEY'] = 'your secret key'
 @app.route('/')
 def index():
     conn = get_db_connection()
-    posts = conn.execute('SELECT * FROM posts').fetchall()
+    cursor = conn.cursor(dictionary=True)
+
+    query = 'SELECT * FROM posts'
+    cursor.execute(query)
+
+    posts = cursor.fetchall()
+
+    cursor.close()
     conn.close()
+
     return render_template('index.html', posts=posts)
+
 
 @app.route('/<int:post_id>')
 def post(post_id):
