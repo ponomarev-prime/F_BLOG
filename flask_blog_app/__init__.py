@@ -1,6 +1,12 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
+import text2telegram as t2t
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+DATABASE = './flask_blog_app/database.db'
 import flask_blog_app.art2telegram as a2t
 import os
 from dotenv import load_dotenv
@@ -43,14 +49,6 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
-        passkey = request.form['passkey']
-        createkey = os.getenv('SITE_PASSKEY')
-      
-        if passkey != createkey:
-            flash('Key is wrong!')
-            chKey=False
-        else:
-            chKey=True
 
         if not title:
             flash('Title is required!')
@@ -64,8 +62,6 @@ def create():
                          (title, content))
             conn.commit()
             conn.close()
-            a2t.sendText2Channel(f"{title}\n{content}")
-            print(passkey)
             return redirect(url_for('index'))
         else:
             flash("Somthing wrong!")
