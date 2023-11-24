@@ -82,9 +82,13 @@ def create():
         
         if chKey == True and chTitle==True:
             conn = get_db_connection()
-            conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
-                         (title, content))
+            cursor = conn.cursor()
+
+            query = 'INSERT INTO posts (title, content) VALUES (%s, %s)'
+            cursor.execute(query, (title, content))
+
             conn.commit()
+            cursor.close()
             conn.close()
             a2t.sendText2Channel(f"{title}\n{content}")
             print(passkey)
@@ -105,11 +109,15 @@ def edit(id):
             flash('Title is required!')
         else:
             conn = get_db_connection()
-            conn.execute('UPDATE posts SET title = ?, content = ?'
-                         ' WHERE id = ?',
-                         (title, content, id))
+            cursor = conn.cursor()
+
+            query = 'UPDATE posts SET title = %s, content = %s WHERE id = %s'
+            cursor.execute(query, (title, content, id))
+
             conn.commit()
+            cursor.close()
             conn.close()
+
             return redirect(url_for('index'))
 
     return render_template('edit.html', post=post)
@@ -118,8 +126,14 @@ def edit(id):
 def delete(id):
     post = get_post(id)
     conn = get_db_connection()
-    conn.execute('DELETE FROM posts WHERE id = ?', (id,))
+    cursor = conn.cursor()
+
+    query = 'DELETE FROM posts WHERE id = %s'
+    cursor.execute(query, (id,))
+
     conn.commit()
+    cursor.close()
     conn.close()
+
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('index'))
