@@ -35,8 +35,9 @@ curl -X POST -d "title=Hello from cURL" -d "content=cURL POST запрос" http
 ![](.gitcontent/curl_post_x.png)
 
 
-# NEXT 2023-11-21
+# NEXT
 
-```
-$ export PYTHONPATH=/home/alponomarev/myscr/F_BLOG/flask_blog_app
+```bash
+export PYTHONPATH=/home/alponomarev/myscr/F_BLOG/flask_blog_app
+flask --app flask_blog_app/ run
 ```
