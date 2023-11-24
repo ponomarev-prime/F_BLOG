@@ -7,12 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE = './flask_blog_app/database.db'
-import flask_blog_app.art2telegram as a2t
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-DATABASE = './flask_blog_app/database.db'
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
