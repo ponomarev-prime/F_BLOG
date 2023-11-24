@@ -1,7 +1,7 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
-import text2telegram as t2t
+import flask_blog_app.art2telegram as a2t
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -44,7 +44,7 @@ def create():
         title = request.form['title']
         content = request.form['content']
         passkey = request.form['passkey']
-        createkey = os.getenv('PASSKEY')
+        createkey = os.getenv('SITE_PASSKEY')
       
         if passkey != createkey:
             flash('Key is wrong!')
@@ -64,7 +64,7 @@ def create():
                          (title, content))
             conn.commit()
             conn.close()
-            t2t.sendText2Channel(f"{title}\n{content}")
+            a2t.sendText2Channel(f"{title}\n{content}")
             print(passkey)
             return redirect(url_for('index'))
         else:
