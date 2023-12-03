@@ -25,7 +25,7 @@ def sendText2Channel(data):
     }
 
     response = requests.post(url, json=payload, headers=headers)
-    print(response.text)
+    return(response.text)
 
 
 if __name__ == "__main__":

@@ -1,63 +1,54 @@
-import mysql.connector
+import os
+import uuid
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
-import text2telegram as t2t
-import os
+from werkzeug.utils import secure_filename
+import flask_blog_app.art2telegram as a2tgm
+import flask_blog_app.art2telegraph_v2 as a2tph
+import flask_blog_app.art2vkontakte_v2 as a2vk
+from flask_blog_app.db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
+from flask import send_from_directory
+
 from dotenv import load_dotenv
 load_dotenv()
 
-db_config = {
-    'host': os.getenv('BEGET_MYSQL_SERVER'),
-    'user': os.getenv('BEGET_MYSQL_USER'),
-    'password': os.getenv('BEGET_MYSQL_PASS'),
-    'database': os.getenv('BEGET_MYSQL_DB')
-}
-
-def get_db_connection():
-    conn = mysql.connector.connect(**db_config)
-    conn.row_factory = mysql.connector.cursor.MySQLCursorDict
-    return conn
-
-def get_post(post_id):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = 'SELECT * FROM posts WHERE id = %s'
-    cursor.execute(query, (post_id,))
-    
-    post = cursor.fetchone()
-    
-    cursor.close()
-    conn.close()
-
-    if post is None:
-        abort(404)
-
-    return post
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your secret key'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET')
+
+UPLOAD_FOLDER = 'flask_blog_app/static/images'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+DEFAULT_IMAGE_PATH = 'images/default.jpeg'
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def generate_post_id():
+    return str(uuid.uuid4().hex)[:8]
+
+def save_image(image):
+    post_id = generate_post_id()
+    upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id))
+    os.makedirs(upload_folder, exist_ok=True)
+
+    filename = secure_filename(image.filename)
+    filepath = os.path.join(upload_folder, filename)
+    image.save(filepath)
+
+    path = f'images/{post_id}/{filename}'
+    return path
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    query = 'SELECT * FROM posts'
-    cursor.execute(query)
-
-    posts = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template('index.html', posts=posts)
-
+    posts = get_all_posts()
+    return render_template('index.html', posts=posts, default_image_path=DEFAULT_IMAGE_PATH)
 
 @app.route('/<int:post_id>')
 def post(post_id):
     post = get_post(post_id)
-    content = post['content']
+    if post and not post.get('image_path'):
+        post['image_path'] = 'images/default.jpeg'
     return render_template('post.html', post=post)
 
 @app.route('/create', methods=('GET', 'POST'))
@@ -65,27 +56,46 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
+        passkey = request.form['passkey']
+        createkey = os.getenv('SITE_PASSKEY')
+        # Получаем файл из формы
+        image = request.files['image']
+
+        if passkey != createkey:
+            flash('Key is wrong!')
+            chKey=False
+        else:
+            chKey=True
 
         if not title:
             flash('Title is required!')
             chTitle=False
         else:
             chTitle=True
-        
+
+        if image and allowed_file(image.filename):
+            image_path = save_image(image)
+        else:
+            image_path = ''
+
         if chKey == True and chTitle==True:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-
-            query = 'INSERT INTO posts (title, content) VALUES (%s, %s)'
-            cursor.execute(query, (title, content))
-
-            conn.commit()
-            cursor.close()
-            conn.close()
+            insert_post(title, content, image_path)
+            print(a2tgm.sendText2Channel(f"{title}\n{content}"))
+            print(a2tph.send_text2telegraph(title, content))
+            print(a2vk.send_text2vkontakte(f"{title}\n{content}"))
+            print(passkey)
             return redirect(url_for('index'))
         else:
             flash("Somthing wrong!")
     return render_template('create.html')
+
+@app.route('/create_neuro', methods=('GET', 'POST'))
+def create_neuro():
+    return render_template('under_construction.html')
+
+@app.route('/create_consolidated', methods=('GET', 'POST'))
+def create_consolidated():
+    return render_template('under_construction.html')
 
 @app.route('/<int:id>/edit', methods=('GET', 'POST'))
 def edit(id):
@@ -98,16 +108,7 @@ def edit(id):
         if not title:
             flash('Title is required!')
         else:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-
-            query = 'UPDATE posts SET title = %s, content = %s WHERE id = %s'
-            cursor.execute(query, (title, content, id))
-
-            conn.commit()
-            cursor.close()
-            conn.close()
-
+            update_post(id, title, content)
             return redirect(url_for('index'))
 
     return render_template('edit.html', post=post)
@@ -115,15 +116,6 @@ def edit(id):
 @app.route('/<int:id>/delete', methods=('POST',))
 def delete(id):
     post = get_post(id)
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    query = 'DELETE FROM posts WHERE id = %s'
-    cursor.execute(query, (id,))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
+    delete_post(id)
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('index'))

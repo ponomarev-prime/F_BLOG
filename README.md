@@ -38,6 +38,11 @@ curl -X POST -d "title=Hello from cURL" -d "content=cURL POST запрос" http
 # NEXT
 
 ```bash
-export PYTHONPATH=/home/alponomarev/myscr/F_BLOG/flask_blog_app
+export PYTHONPATH=/home/xxx/myscr/F_BLOG/flask_blog_app
 flask --app flask_blog_app/ run
+```
+# Git
+
+```bash
+git merge --no-ff alex/beget_mysql_db alex/frontend alex/telegraph
 ```
