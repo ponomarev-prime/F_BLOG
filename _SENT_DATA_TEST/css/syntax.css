@@ -1,0 +1,13 @@
+body {
+    max-width: 800px; /* Set the maximum width for the entire body */
+    margin: auto; /* Center the content */
+}
+
+.content {
+    margin-top: 20px; /* Add some space between the image and the content */
+}
+
+img {
+    max-width: 100%; /* Make sure the image doesn't exceed its container */
+    height: auto; /* Maintain the aspect ratio of the image */
+}

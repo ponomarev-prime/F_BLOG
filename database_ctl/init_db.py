@@ -1,6 +1,6 @@
 import sqlite3
 
-connection = sqlite3.connect('./flask_blog_app/database.db')
+connection = sqlite3.connect('.flask_blog_app/db_utils/sqlite_database.db')
 
 with open('schema.sql') as f:
     connection.executescript(f.read())
