@@ -4,7 +4,8 @@ import requests
 from html import escape
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv('telegraph_ctl/tph.env')
+from telegraph import Telegraph
 
 
 def read_html_file(file_path):
@@ -96,13 +97,42 @@ def send_text2telegraph(title, text):
     art_url = data['result']['url']
     return art_url
 
+def send_art2telegraph(title, text, image_path):
+    access_token = os.getenv('TPH_TOKEN')
+    telegraph = Telegraph(access_token=access_token)
+
+    src = telegraph.upload_file(image_path)
+    src_value = src[0]['src']
+
+    # Создание статьи
+    article = telegraph.create_page(
+        title=title,
+        content=[
+            {'tag': 'figure', 'children': [{'tag': 'img', 'attrs': {'src': src_value}}]},
+            {'tag': 'p', 'children': [text]}  # Замените текстом вашей статьи
+        ],
+        author_name = 'ALEX',
+        author_url = 'https://t.me/AXV15'
+    )
+
+    # Получение ссылки на созданную статью
+    article_url = 'https://telegra.ph/{}'.format(article['path'])
+    return article_url 
+
 
 if __name__ == "__main__":
     # Пример использования send_html2telegraph
-    #html_path='/home/xxx/myscr/F_BLOG/_SENT_DATA_TEST/test_git_parable.html'
+    #html_path='/home/alponomarev/myscr/F_BLOG/_SENT_DATA_TEST/test_git_parable.html'
     #print(send_html2telegraph(html_path))
 
     # Пример использования send_text2telegraph
-    title = 'Title of Text'
-    text = 'Hello, world! This is a test text.'
-    print(send_text2telegraph(title, text))
+    #title = 'Title of Text'
+    #text = 'Hello, world! This is a test text.'
+    #print(send_text2telegraph(title, text))
+
+
+    # Пример использования send_art2telegraph
+    title = "TEST X"
+    text = "test text"
+    image_path = 'telegraph_ctl/gen_img.jpeg'
+    print(send_art2telegraph(title, text, image_path))
