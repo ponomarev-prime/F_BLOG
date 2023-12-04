@@ -46,3 +46,5 @@ flask --app flask_blog_app/ run
 ```bash
 git merge --no-ff alex/beget_mysql_db alex/frontend alex/telegraph
 ```
+
+XXX
