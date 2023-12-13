@@ -72,7 +72,18 @@ def send_html2telegraph(html_path):
         article_soup.find('div').clear()
         article_soup.find('div').append(nodeToDom({'children': data['content']}))
 
-    art_url = data['result']['url']
+    if 'result' in data and 'url' in data['result']:
+        art_url = data['result']['url']
+    elif 'ok' in data and 'error' in data and data['ok'] is False and data['error'] == 'ACCESS_TOKEN_INVALID':
+        # Обработка ошибки ACCESS_TOKEN_INVALID
+        art_url = None
+        print("Error: ACCESS_TOKEN_INVALID")
+        # Дополнительные действия по обработке ошибки, если необходимо
+    else:
+        # Обработка других случаев, если ключи 'result' или 'url' не найдены
+        art_url = None  # или другое значение по умолчанию
+        print("Unexpected structure in data")
+    
     return art_url
 
 def send_text2telegraph(title, text):
@@ -99,10 +110,17 @@ def send_text2telegraph(title, text):
 
 if __name__ == "__main__":
     # Пример использования send_html2telegraph
-    #html_path='/home/xxx/myscr/F_BLOG/_SENT_DATA_TEST/test_git_parable.html'
-    #print(send_html2telegraph(html_path))
+    # html
+    relative_path = '_SENT_DATA_TEST/test_git_parable.html'
+    # Получаем текущую директорию, из которой выполняется скрипт
+    current_directory = os.path.abspath(os.path.dirname(__file__))
+    # Поднимаемся на два уровня выше текущей директории
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    html_path = f'{parent_directory}/{relative_path}'
+    print(html_path)
+    print(send_html2telegraph(html_path))
 
     # Пример использования send_text2telegraph
-    title = 'Title of Text'
-    text = 'Hello, world! This is a test text.'
-    print(send_text2telegraph(title, text))
+    #title = 'Title of Text'
+    #text = 'Hello, world! This is a test text.'
+    #print(send_text2telegraph(title, text))
