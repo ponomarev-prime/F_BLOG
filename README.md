@@ -15,8 +15,6 @@ This is a simple Flask blog application for publishing articles with images. Use
   - [Configuration](#configuration)
 - [Usage](#usage)
 - [Routes](#routes)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -58,7 +56,7 @@ pip install -r requirements.txt
 
 ```plaintext
 FLASK_SECRET=
-FLASK_SECRET=mysql (or sqlite)
+DB_TYPE=mysql (or sqlite)
 
 BEGET_MYSQL_SERVER=
 BEGET_MYSQL_USER=
