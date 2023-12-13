@@ -1,10 +1,8 @@
 import os
 from dotenv import load_dotenv
-
 load_dotenv('flask_blog_app/.env')
 
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
-print(f"current_script_directory :: {current_script_directory}")
 
 mysql_config = {
     'host': os.getenv('BEGET_MYSQL_SERVER'),

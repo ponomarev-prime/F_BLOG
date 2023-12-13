@@ -1,16 +1,18 @@
 import os
 import uuid
+import time
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
-import flask_blog_app.art2telegram as a2tgm
-import flask_blog_app.art2telegraph_v2 as a2tph
-import flask_blog_app.art2vkontakte_v2 as a2vk
-from flask_blog_app.db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
+import telegram_ctl as a2tgm
+import telegraph_ctl as a2tph
+import vkontakte_ctl as a2vk
+from db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
 from flask import send_from_directory
 
+
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv('flask_blog_app/.env')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET')
@@ -21,11 +23,15 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DEFAULT_IMAGE_PATH = 'images/default.jpeg'
 
+current_script_directory = os.path.dirname(os.path.abspath(__file__))
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def generate_post_id():
-    return str(uuid.uuid4().hex)[:8]
+    timestamp = int(time.time())
+    uuid_part = str(uuid.uuid4().hex)[:8]
+    return f"{timestamp}_{uuid_part}"
 
 def save_image(image):
     post_id = generate_post_id()
@@ -38,6 +44,39 @@ def save_image(image):
 
     path = f'images/{post_id}/{filename}'
     return path
+
+def send_to_tgm_link(title, content, full_img_path):
+    try:
+        tgm_link = a2tgm.sentArt2Channel(f"{title}\n{content}", full_img_path)
+        return tgm_link
+    except Exception as e:
+        flash(f"Error sending to Telegram: {e}")
+        return None
+
+def send_to_tph_link(title, content, full_img_path):
+    try:
+        tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
+        return tph_link
+    except Exception as e:
+        flash(f"Error sending to Telegraph: {e}")
+        return None
+
+def send_to_vk_link(title, content, full_img_path):
+    try:
+        vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
+        return vk_link
+    except Exception as e:
+        flash(f"Error sending to VKontakte: {e}")
+        return None
+
+def send_to_database(title, content, image_path, tgm_link, tph_link, vk_link):
+    try:
+        site_content = f'{content}<br><a href="{tgm_link}">{tgm_link}</a><br><a href="{tph_link}">{tph_link}</a><br><a href="{vk_link}">{vk_link}</a>'           
+        insert_post(title, site_content, image_path)
+        return True
+    except Exception as e:
+        flash(f"Error sending to Database: {e}")
+        return None
 
 @app.route('/')
 def index():
@@ -78,12 +117,14 @@ def create():
         else:
             image_path = ''
 
-        if chKey == True and chTitle==True:
-            insert_post(title, content, image_path)
-            print(a2tgm.sendText2Channel(f"{title}\n{content}"))
-            print(a2tph.send_text2telegraph(title, content))
-            print(a2vk.send_text2vkontakte(f"{title}\n{content}"))
-            print(passkey)
+        if chKey and chTitle:
+            full_img_path = f'{current_script_directory}/static/{image_path}'
+            
+            tgm_link = send_to_tgm_link(title, content, full_img_path)
+            tph_link = send_to_tph_link(title, content, full_img_path)
+            vk_link = send_to_vk_link(title, content, full_img_path)
+
+            send_to_database(title, content, image_path, tgm_link, tph_link, vk_link)
             return redirect(url_for('index'))
         else:
             flash("Somthing wrong!")
@@ -119,3 +160,4 @@ def delete(id):
     delete_post(id)
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('index'))
+

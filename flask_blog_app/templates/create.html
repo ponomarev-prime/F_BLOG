@@ -1,31 +1,30 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{% block title %} Create a New Post {% endblock %}</h1>
+<h1>{% block title %} Создать новый пост {% endblock %}</h1>
 
 <form method="post" enctype="multipart/form-data">
     <div class="form-group">
-        <label for="title">Title</label>
+        <label for="title">Заголовок</label>
         <input type="text" name="title"
                placeholder="Post title" class="form-control"
                value="{{ request.form['title'] }}"></input>
     </div>
     <div class="form-group">
-        <label for="content">Content</label>
+        <label for="content">Контент</label>
         <textarea name="content" placeholder="Post content"
                   class="form-control">{{ request.form['content'] }}</textarea>
     </div>
     <div class="form-group">
-        <label for="content">Pass</label>
-        <textarea name="passkey" placeholder="Secret key"
-                  class="form-control">{{ request.form['passkey'] }}</textarea>
-    </div>
+        <label for="content">Код</label>
+        <input type="password" name="passkey" placeholder="Secret key" class="form-control" style="width: 200px;">
+    </div>    
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
-    <div class="form-group">
-        <label for="image">Image</label>
+        <label for="image">Изображение</label>
         <input type="file" name="image" class="form-control-file">
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Отправить</button>
     </div>
 </form>
 {% endblock %}
