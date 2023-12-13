@@ -3,7 +3,7 @@ import os
 import json
 from dotenv import load_dotenv
 load_dotenv('vkontakte_ctl/vk.env')
-from flask_blog_app.upload_photo2vkontakte import add_photo2album as ph2a
+from vkontakte_ctl.upload_photo2vkontakte import add_photo2album as ph2a
 
 token = os.getenv('VK_USER_TOKEN')
 owner_id = os.getenv('VK_OWNER_USER_ID')
