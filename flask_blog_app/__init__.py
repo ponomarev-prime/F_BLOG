@@ -4,15 +4,15 @@ import time
 from flask import Flask, render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
-import flask_blog_app.art2telegram as a2tgm
-import flask_blog_app.art2telegraph_v2 as a2tph
-import flask_blog_app.art2vkontakte_v2 as a2vk
-from flask_blog_app.db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
+import telegram_ctl as a2tgm
+import telegraph_ctl as a2tph
+import vkontakte_ctl as a2vk
+from db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
 from flask import send_from_directory
 
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv('.env')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET')
@@ -24,7 +24,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DEFAULT_IMAGE_PATH = 'images/default.jpeg'
 
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
-
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

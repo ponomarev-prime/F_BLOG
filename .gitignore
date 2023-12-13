@@ -196,3 +196,5 @@ pyrightconfig.json
 
 *.env
 .flaskenv
+
+_SENT_DATA_TEST/
