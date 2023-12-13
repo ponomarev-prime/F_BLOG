@@ -45,6 +45,39 @@ def save_image(image):
     path = f'images/{post_id}/{filename}'
     return path
 
+def send_to_tgm_link(title, content, full_img_path):
+    try:
+        tgm_link = a2tgm.sentArt2Channel(f"{title}\n{content}", full_img_path)
+        return tgm_link
+    except Exception as e:
+        flash(f"Error sending to Telegram: {e}")
+        return None
+
+def send_to_tph_link(title, content, full_img_path):
+    try:
+        tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
+        return tph_link
+    except Exception as e:
+        flash(f"Error sending to Telegraph: {e}")
+        return None
+
+def send_to_vk_link(title, content, full_img_path):
+    try:
+        vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
+        return vk_link
+    except Exception as e:
+        flash(f"Error sending to VKontakte: {e}")
+        return None
+
+def send_to_database(title, content, image_path, tgm_link, tph_link, vk_link):
+    try:
+        site_content = f'{content}<br><a href="{tgm_link}">{tgm_link}</a><br><a href="{tph_link}">{tph_link}</a><br><a href="{vk_link}">{vk_link}</a>'           
+        insert_post(title, site_content, image_path)
+        return True
+    except Exception as e:
+        flash(f"Error sending to Database: {e}")
+        return None
+
 @app.route('/')
 def index():
     posts = get_all_posts()
@@ -84,13 +117,14 @@ def create():
         else:
             image_path = ''
 
-        if chKey == True and chTitle==True:
+        if chKey and chTitle:
             full_img_path = f'{current_script_directory}/static/{image_path}'
-            tgm_link = a2tgm.sentArt2Channel(f"{title}\n{content}", full_img_path)
-            tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
-            vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
-            site_content = f'{content}<br><a href="{tgm_link}">{tgm_link}</a><br><a href="{tph_link}">{tph_link}</a><br><a href="{vk_link}">{vk_link}</a>'           
-            insert_post(title, site_content, image_path)
+            
+            tgm_link = send_to_tgm_link(title, content, full_img_path)
+            tph_link = send_to_tph_link(title, content, full_img_path)
+            vk_link = send_to_vk_link(title, content, full_img_path)
+
+            send_to_database(title, content, image_path, tgm_link, tph_link, vk_link)
             return redirect(url_for('index'))
         else:
             flash("Somthing wrong!")
@@ -126,3 +160,4 @@ def delete(id):
     delete_post(id)
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('index'))
+

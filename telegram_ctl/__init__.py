@@ -37,7 +37,6 @@ def sendText2Channel(data):
     return(message_url)
 
 def sentArt2Channel(data, image_path):
-    print(image_path)
     # Открываем изображение в бинарном режиме
     with open(image_path, "rb") as image_file:
         img = image_file.read()
