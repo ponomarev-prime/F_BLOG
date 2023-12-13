@@ -4,7 +4,7 @@ import requests
 from html import escape
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-load_dotenv('telegraph_ctl/tph.env')
+load_dotenv('flask_blog_app/.env')
 from telegraph import Telegraph
 
 

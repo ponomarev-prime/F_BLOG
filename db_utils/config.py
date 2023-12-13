@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-
 load_dotenv('flask_blog_app/.env')
 
 current_script_directory = os.path.dirname(os.path.abspath(__file__))

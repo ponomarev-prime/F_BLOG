@@ -12,7 +12,7 @@ from flask import send_from_directory
 
 
 from dotenv import load_dotenv
-load_dotenv('.env')
+load_dotenv('flask_blog_app/.env')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET')
