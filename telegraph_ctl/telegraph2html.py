@@ -30,29 +30,25 @@ def create_html_page(source_url):
     with open(img_file_path, 'wb') as img_file:
         img_file.write(img_data)
 
-    # Создаем новую HTML-страницу с сохранением форматирования
-    new_html = f"""
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <!-- Вставьте сюда необходимые мета-теги, стили и скрипты -->
-        <title>{title}</title>
-      </head>
-      <body>
-        <h1>{title}</h1>
-        <p>Автор: <a href="{author_link}" target="_blank">{author_name}</a></p>
-        <img src="img/image.jpg" alt="Изображение">
-        <p>{text}</p>
-        <p>Оригинальная ссылка: <a href="{link}" target="_blank">{link}</a></p>
-        <!-- Вставьте сюда необходимые элементы страницы -->
-      </body>
-    </html>
-    """
+    # Читаем шаблон из файла
+    template_file_path = os.path.join(script_directory, 'template.html')
+    with open(template_file_path, 'r', encoding='utf-8') as template_file:
+        template = template_file.read()
+
+    # Подставляем значения в шаблон
+    template = template.format(
+        title=title,
+        author_link=author_link,
+        author_name=author_name,
+        text=text,
+        link=link,
+        img_path=img_file_path.replace(script_directory, '').lstrip(os.path.sep)
+    )
 
     # Сохраняем новую HTML-страницу в файл в текущей директории
     file_path = os.path.join(script_directory, 'новая_страница.html')
     with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(new_html)
+        file.write(template)
 
     print(f'HTML-файл сохранен в: {file_path}')
     print(f'Изображение сохранено в: {img_file_path}')
