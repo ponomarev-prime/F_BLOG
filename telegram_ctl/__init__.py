@@ -2,7 +2,7 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-load_dotenv('telegram_ctl/tgm.env')
+load_dotenv('flask_blog_app/.env')
 
 TOKEN = os.getenv('TG_TOKEN')
 chat_id = os.getenv('ID_DIGITAL_SPIRIT_CHANNEL')

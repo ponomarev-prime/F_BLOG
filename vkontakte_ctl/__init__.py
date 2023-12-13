@@ -2,7 +2,7 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-load_dotenv('vkontakte_ctl/vk.env')
+load_dotenv('flask_blog_app/.env')
 from vkontakte_ctl.upload_photo2vkontakte import add_photo2album as ph2a
 
 token = os.getenv('VK_USER_TOKEN')
@@ -51,6 +51,7 @@ def send_art2vkontakte(msg, image):
                     'attachments': attachments
                     }).json()
     post_link = extract_post_link(response, owner_id_group)
+    print(post_link)
     return post_link
 
 
