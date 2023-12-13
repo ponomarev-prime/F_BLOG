@@ -1,7 +1,7 @@
 <img src=".gitcontent/f_blog_title.png" alt="Flask Blog Title" width="1024">
 
 
-Certainly! Below is a sample README for Flask blog application:
+Below is a sample README for Flask blog application:
 
 # Flask Blog Application
 
