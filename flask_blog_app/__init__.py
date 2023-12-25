@@ -9,9 +9,10 @@ import telegraph_ctl as a2tph
 import vkontakte_ctl as a2vk
 from db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
 from flask import send_from_directory
-
-
 from dotenv import load_dotenv
+import logging
+
+# Загрузка переменных окружения
 load_dotenv('flask_blog_app/.env')
 
 app = Flask(__name__)
@@ -23,7 +24,16 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DEFAULT_IMAGE_PATH = 'images/default.jpeg'
 
+# Получение текущей директории скрипта
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
+
+# Настройка логирования
+log_file = os.path.join(current_script_directory, 'flask_log.log')
+# Configure Flask logging
+app.logger.setLevel(logging.INFO)  # Set log level to INFO
+handler = logging.FileHandler(log_file)  # Log to a file
+app.logger.addHandler(handler)
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -48,8 +58,10 @@ def save_image(image):
 def send_to_tgm_link(title, content, full_img_path):
     try:
         tgm_link = a2tgm.sentArt2Channel(f"{title}\n{content}", full_img_path)
+        app.logger.info(f"Sent to Telegram. Title: {title}, Content: {content}, Image Path: {full_img_path}")
         return tgm_link
     except Exception as e:
+        app.logger.error(f"Error sending to Telegram: {e}")
         flash(f"Error sending to Telegram: {e}")
         return None
 
@@ -58,6 +70,7 @@ def send_to_tph_link(title, content, full_img_path):
         tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
         return tph_link
     except Exception as e:
+        app.logger.error(f"Error sending to Telegraph: {e}")
         flash(f"Error sending to Telegraph: {e}")
         return None
 
@@ -66,6 +79,7 @@ def send_to_vk_link(title, content, full_img_path):
         vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
         return vk_link
     except Exception as e:
+        app.logger.error(f"Error sending to Vkontakte: {e}")
         flash(f"Error sending to VKontakte: {e}")
         return None
 
@@ -80,8 +94,14 @@ def send_to_database(title, content, image_path, tgm_link, tph_link, vk_link):
 
 @app.route('/')
 def index():
-    posts = get_all_posts()
-    return render_template('index.html', posts=posts, default_image_path=DEFAULT_IMAGE_PATH)
+    try:
+        posts = get_all_posts()
+        app.logger.info("Successfully retrieved posts for index page.")
+        return render_template('index.html', posts=posts, default_image_path=DEFAULT_IMAGE_PATH)
+    except Exception as e:
+        app.logger.error(f"Error in index(): {e}")
+        flash(f"An error occurred: {e}")
+        return render_template('error.html')  # Свой шаблон для отображения ошибок
 
 @app.route('/<int:post_id>')
 def post(post_id):

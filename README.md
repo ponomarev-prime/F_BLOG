@@ -82,8 +82,10 @@ Run the Flask application:
 
 Create `.flaskenv`
 ```
-PYTHONPATH=/home/[path]/F_BLOG/flask_blog_app
+FLASK_ENV=development
 FLASK_APP=flask_blog_app
+PYTHONPATH=/home/[path]/F_BLOG/flask_blog_app
+
 ```
 
 Run
