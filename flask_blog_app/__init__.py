@@ -59,7 +59,11 @@ def save_image(image):
 
 def send_to_tgm_link(title, content, full_img_path):
     try:
-        tgm_link = a2tgm.sentArt2Channel(f"{title}\n{content}", full_img_path)
+        if full_img_path:
+            tgm_link = a2tgm.sentArt2Channel(f"{title}\n{content}", full_img_path)
+        else:
+            tgm_link = a2tgm.sendText2Channel(f"{title}\n{content}")
+
         app.logger.info(f"Sent to Telegram. Title: {title}, Content: {content}, Image Path: {full_img_path}")
         return tgm_link
     except Exception as e:
@@ -69,7 +73,11 @@ def send_to_tgm_link(title, content, full_img_path):
 
 def send_to_tph_link(title, content, full_img_path):
     try:
-        tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
+        if full_img_path:
+            tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
+        else:
+            tph_link = a2tph.send_text2telegraph(title, content)
+
         app.logger.info(f"Sent to Telegraph. Title: {title}, Content: {content}, Image Path: {full_img_path}")
         return tph_link
     except Exception as e:
@@ -79,7 +87,11 @@ def send_to_tph_link(title, content, full_img_path):
 
 def send_to_vk_link(title, content, full_img_path):
     try:
-        vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
+        if full_img_path:
+            vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
+        else:
+            vk_link = a2vk.send_text2vkontakte(f"{title}\n{content}")
+
         app.logger.info(f"Sent to Vkontakte. Title: {title}, Content: {content}, Image Path: {full_img_path}")
         return vk_link
     except Exception as e:
@@ -140,11 +152,13 @@ def create():
 
         if image and allowed_file(image.filename):
             image_path = save_image(image)
+            full_img_path = f'{current_script_directory}/static/{image_path}'
         else:
             image_path = ''
+            full_img_path = ''
 
         if chKey and chTitle:
-            full_img_path = f'{current_script_directory}/static/{image_path}'
+            
             
             tgm_link = send_to_tgm_link(title, content, full_img_path)
             tph_link = send_to_tph_link(title, content, full_img_path)

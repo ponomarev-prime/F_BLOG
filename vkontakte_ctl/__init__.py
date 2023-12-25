@@ -34,17 +34,22 @@ def create_attachments(type_att, owner_id, media_id):
         return None
 
 def send_text2vkontakte(msg):
-    response = requests.post('https://api.vk.com/method/wall.post', 
-                params={
-                    'access_token': token,
-                    'owner_id': owner_id_group, 
-                    'from_group': 1,
-                    'message': msg,
-                    'signed': 0, 
-                    'v':"5.131"
-                    }).json()
-    post_link = extract_post_link(response, owner_id_group)
-    return post_link
+    try:
+        response = requests.post('https://api.vk.com/method/wall.post', 
+                    params={
+                        'access_token': token,
+                        'owner_id': owner_id_group, 
+                        'from_group': 1,
+                        'message': msg,
+                        'signed': 0, 
+                        'v':"5.131"
+                        }).json()
+        post_link = extract_post_link(response, owner_id_group)
+        logging.info(f"Text message posted successfully. Post link: {post_link}")
+        return post_link
+    except Exception as e:
+        logging.error(f"Error posting text message: {e}")
+        raise
 
 def send_art2vkontakte(msg, image):
     try:
@@ -72,8 +77,8 @@ def send_art2vkontakte(msg, image):
 
 if __name__ == "__main__":
     text = "Sent from PYTHON"
-    #print(send_text2vkontakte(text))
+    print(send_text2vkontakte(text))
 
     image = 'gen_img.jpg'
     image_file = os.path.join(script_directory, image)
-    print(send_art2vkontakte(text, image_file))
+    #print(send_art2vkontakte(text, image_file))

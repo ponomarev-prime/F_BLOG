@@ -97,25 +97,37 @@ def send_html2telegraph(html_path):
     return art_url
 
 def send_text2telegraph(title, text):
+    # Настройка логирования для этой функции
+    logger = logging.getLogger(__name__)
+
     api_url = 'https://api.telegra.ph/createPage'
     access_token = os.getenv('TPH_TOKEN')
 
-    response = requests.post(api_url, json={  # запрос к telegraph api
-        'access_token': access_token,
-        'title': title,
-        'content': [{'tag': 'p', 'children': [text]}],
-        'return_content': True,
-        'author_name': 'ALEX',
-        'author_url': 'https://t.me/AXV15'
-    })
+    try:
+        response = requests.post(api_url, json={  # запрос к telegraph api
+            'access_token': access_token,
+            'title': title,
+            'content': [{'tag': 'p', 'children': [text]}],
+            'return_content': True,
+            'author_name': 'ALEX',
+            'author_url': 'https://t.me/AXV15'
+        })
 
-    data = response.json()
-    if 'content' in data:
-        # Можно сделать что-то с контентом, если это нужно
-        pass
+        data = response.json()
 
-    art_url = data['result']['url']
-    return art_url
+        if 'content' in data:
+            # Можно сделать что-то с контентом, если это нужно
+            pass
+
+        art_url = data['result']['url']
+        logger.info("Article URL: %s", art_url)
+
+        return art_url
+
+    except Exception as e:
+        # Обработка ошибок и логирование
+        logger.error("Error creating Telegraph article: %s", str(e))
+        return None
 
 def send_art2telegraph(title, text, image_path):
     logger = logging.getLogger(__name__)
@@ -166,8 +178,8 @@ if __name__ == "__main__":
     # Пример использования send_text2telegraph
     title = 'Title of Text'
     text = 'Hello, world! This is a test text.'
-    #print(send_text2telegraph(title, text))
+    print(send_text2telegraph(title, text))
 
     image = 'gen_img.jpg'
     image_file = os.path.join(script_directory, image)
-    print(send_art2telegraph(title, text, image_file))
+    #print(send_art2telegraph(title, text, image_file))
