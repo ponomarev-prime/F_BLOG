@@ -30,8 +30,10 @@ current_script_directory = os.path.dirname(os.path.abspath(__file__))
 # Настройка логирования
 log_file = os.path.join(current_script_directory, 'flask_log.log')
 # Configure Flask logging
-app.logger.setLevel(logging.INFO)  # Set log level to INFO
+app.logger.setLevel(logging.DEBUG)  # Set log level
 handler = logging.FileHandler(log_file)  # Log to a file
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s - %(message)s')  # Формат сообщения
+handler.setFormatter(formatter)
 app.logger.addHandler(handler)
 
 
@@ -68,6 +70,7 @@ def send_to_tgm_link(title, content, full_img_path):
 def send_to_tph_link(title, content, full_img_path):
     try:
         tph_link = a2tph.send_art2telegraph(title, content, full_img_path)
+        app.logger.info(f"Sent to Telegraph. Title: {title}, Content: {content}, Image Path: {full_img_path}")
         return tph_link
     except Exception as e:
         app.logger.error(f"Error sending to Telegraph: {e}")
@@ -77,6 +80,7 @@ def send_to_tph_link(title, content, full_img_path):
 def send_to_vk_link(title, content, full_img_path):
     try:
         vk_link = a2vk.send_art2vkontakte(f"{title}\n{content}", full_img_path)
+        app.logger.info(f"Sent to Vkontakte. Title: {title}, Content: {content}, Image Path: {full_img_path}")
         return vk_link
     except Exception as e:
         app.logger.error(f"Error sending to Vkontakte: {e}")
@@ -87,8 +91,10 @@ def send_to_database(title, content, image_path, tgm_link, tph_link, vk_link):
     try:
         site_content = f'{content}<br><a href="{tgm_link}">{tgm_link}</a><br><a href="{tph_link}">{tph_link}</a><br><a href="{vk_link}">{vk_link}</a>'           
         insert_post(title, site_content, image_path)
+        app.logger.info(f"Sent to database. Title: {title}, Content: {content}, Image Path: {image_path}")
         return True
     except Exception as e:
+        app.logger.error(f"Error sending to database: {e}")
         flash(f"Error sending to Database: {e}")
         return None
 
@@ -181,3 +187,7 @@ def delete(id):
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('index'))
 
+@app.errorhandler(500)
+def server_error(error):
+    app.logger.exception('An exception occurred during a request.')
+    return 'Internal Server Error', 500
