@@ -4,9 +4,18 @@ import requests
 from html import escape
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-load_dotenv('flask_blog_app/.env')
 from telegraph import Telegraph
+import logging
 
+# Загрузка переменных окружения
+load_dotenv('flask_blog_app/.env')
+
+# Получение текущей директории скрипта
+script_directory = os.path.dirname(os.path.abspath(__file__))
+log_file = os.path.join(script_directory, 'telegraph_ctl_log.log')
+
+# Настройка логирования
+logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def read_html_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -109,27 +118,37 @@ def send_text2telegraph(title, text):
     return art_url
 
 def send_art2telegraph(title, text, image_path):
+    logger = logging.getLogger(__name__)
+
     access_token = os.getenv('TPH_TOKEN')
     telegraph = Telegraph(access_token=access_token)
 
-    src = telegraph.upload_file(image_path)
-    src_value = src[0]['src']
+    try:
+        # Загрузка изображения
+        src = telegraph.upload_file(image_path)
+        src_value = src[0]['src']
 
-    # Создание статьи
-    article = telegraph.create_page(
-        title=title,
-        content=[
-            {'tag': 'figure', 'children': [{'tag': 'img', 'attrs': {'src': src_value}}]},
-            {'tag': 'p', 'children': [text]}  # Замените текстом вашей статьи
-        ],
-        author_name = 'ALEX',
-        author_url = 'https://t.me/AXV15'
-    )
+        # Создание статьи
+        article = telegraph.create_page(
+            title=title,
+            content=[
+                {'tag': 'figure', 'children': [{'tag': 'img', 'attrs': {'src': src_value}}]},
+                {'tag': 'p', 'children': [text]}  # Замените текстом вашей статьи
+            ],
+            author_name='ALEX',
+            author_url='https://t.me/AXV15'
+        )
 
-    # Получение ссылки на созданную статью
-    article_url = 'https://telegra.ph/{}'.format(article['path'])
-    print(article_url)
-    return article_url 
+        # Получение ссылки на созданную статью
+        article_url = 'https://telegra.ph/{}'.format(article['path'])
+        logger.info("Article URL: %s", article_url)
+
+        return article_url
+
+    except Exception as e:
+        # Обработка ошибок и логирование
+        logger.error("Error creating Telegraph article: %s", str(e))
+        return None
 
 
 if __name__ == "__main__":
@@ -147,4 +166,8 @@ if __name__ == "__main__":
     # Пример использования send_text2telegraph
     title = 'Title of Text'
     text = 'Hello, world! This is a test text.'
-    print(send_text2telegraph(title, text))
+    #print(send_text2telegraph(title, text))
+
+    image = 'gen_img.jpg'
+    image_file = os.path.join(script_directory, image)
+    print(send_art2telegraph(title, text, image_file))
