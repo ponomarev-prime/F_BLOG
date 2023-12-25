@@ -145,7 +145,7 @@ if __name__ == "__main__":
     image_file = os.path.join(script_directory, image)
 
     
-    data = "Telegram ctl1"
+    data = "Telegram ctl. \n[https://dzen.ru/digital_spirit](https://dzen.ru/digital_spirit)"
     
-    #print(sendText2Channel(data))
-    print(sentArt2Channel(data, image_file))
+    print(sendText2Channel(data))
+    #print(sentArt2Channel(data, image_file))
