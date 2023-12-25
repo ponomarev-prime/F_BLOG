@@ -2,9 +2,20 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-load_dotenv('flask_blog_app/.env')
 from vkontakte_ctl.upload_photo2vkontakte import add_photo2album as ph2a
+import logging
 
+# Загрузка переменных окружения
+load_dotenv('flask_blog_app/.env')
+
+# Получение текущей директории скрипта
+script_directory = os.path.dirname(os.path.abspath(__file__))
+log_file = os.path.join(script_directory, 'vkontakte_ctl_log.log')
+
+# Настройка логирования
+logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Token, user, group
 token = os.getenv('VK_USER_TOKEN')
 owner_id = os.getenv('VK_OWNER_USER_ID')
 owner_id_group = os.getenv('VK_OWNER_IG_GROUP')
@@ -36,31 +47,33 @@ def send_text2vkontakte(msg):
     return post_link
 
 def send_art2vkontakte(msg, image):
-    media_id = ph2a(image)
-    type_att = 'photo'
-    attachments =create_attachments(type_att, owner_id, media_id)
+    try:
+        media_id = ph2a(image)
+        type_att = 'photo'
+        attachments = create_attachments(type_att, owner_id, media_id)
 
-    response = requests.post('https://api.vk.com/method/wall.post', 
-                params={
-                    'access_token': token,
-                    'owner_id': owner_id_group, 
-                    'from_group': 1,
-                    'message': msg,
-                    'signed': 0, 
-                    'v':"5.131",
-                    'attachments': attachments
-                    }).json()
-    post_link = extract_post_link(response, owner_id_group)
-    print(post_link)
-    return post_link
+        response = requests.post('https://api.vk.com/method/wall.post', 
+                    params={
+                        'access_token': token,
+                        'owner_id': owner_id_group, 
+                        'from_group': 1,
+                        'message': msg,
+                        'signed': 0, 
+                        'v':"5.131",
+                        'attachments': attachments
+                        }).json()
+        post_link = extract_post_link(response, owner_id_group)
+        logging.info(f"Message posted successfully. Post link: {post_link}")
+        return post_link
+    except Exception as e:
+        logging.error(f"Error posting message: {e}")
+        raise
 
 
 if __name__ == "__main__":
     text = "Sent from PYTHON"
-    print(send_text2vkontakte(text))
+    #print(send_text2vkontakte(text))
 
-    image = 'flask_blog_app/static/images/default.jpeg'
-    #print(send_art2vkontakte(text, image))
-
-    # https://vk.com/club223581354?w=wall-223581354_17%2Fall
-    # {"response": {"post_id": 17}}
+    image = 'gen_img.jpg'
+    image_file = os.path.join(script_directory, image)
+    print(send_art2vkontakte(text, image_file))

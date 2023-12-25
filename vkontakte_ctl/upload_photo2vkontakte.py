@@ -2,7 +2,9 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-load_dotenv('vkontakte_ctl/vk.env')
+
+# Загрузка переменных окружения
+load_dotenv('flask_blog_app/.env')
 
 token = os.getenv('VK_USER_TOKEN')
 owner_id = os.getenv('VK_OWNER_USER_ID')
