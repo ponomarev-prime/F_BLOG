@@ -140,11 +140,11 @@ if __name__ == "__main__":
     current_directory = os.path.abspath(os.path.dirname(__file__))
     # Поднимаемся на два уровня выше текущей директории
     parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
-    html_path = f'{parent_directory}/{relative_path}'
-    print(html_path)
-    print(send_html2telegraph(html_path))
+    #html_path = f'{parent_directory}/{relative_path}'
+    #print(html_path)
+    #print(send_html2telegraph(html_path))
 
     # Пример использования send_text2telegraph
-    #title = 'Title of Text'
-    #text = 'Hello, world! This is a test text.'
-    #print(send_text2telegraph(title, text))
+    title = 'Title of Text'
+    text = 'Hello, world! This is a test text.'
+    print(send_text2telegraph(title, text))
