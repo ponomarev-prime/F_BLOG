@@ -3,6 +3,7 @@ import os
 import json
 from dotenv import load_dotenv
 import logging
+import re
 
 # Загрузка переменных окружения
 load_dotenv('flask_blog_app/.env')
@@ -15,12 +16,24 @@ log_file = os.path.join(script_directory, 'telegram_ctl_log.log')
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def sendText2Channel(data):
+def format_telegram_text(data):
+    formatted_text = data
+
+    # Замена пробелов на \n
+    #formatted_text = data.replace(' ', '\n')
+    
+    # Поиск и замена ссылок с формата https://example.com
+    formatted_text = re.sub(r'https://([^\s]+)', r'[\g<0>](\g<0>)', formatted_text)
+    
+    return formatted_text
+
+def sendText2Channel(text):
     TOKEN = os.getenv('TG_TOKEN')
     chat_id = os.getenv('ID_DIGITAL_SPIRIT_CHANNEL')
     #message_thread_id = os.getenv('ID_IT_SPECIAL_FORCES_THREAD')
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
+    data = format_telegram_text(text)
     payload = {
         "text": data,
         "chat_id": chat_id,
@@ -74,9 +87,11 @@ def sendText2Channel(data):
     return message_url
 
 
-def sentArt2Channel(data, image_path):
+def sentArt2Channel(text, image_path):
     TOKEN = os.getenv('TG_TOKEN')
     chat_id = os.getenv('ID_DIGITAL_SPIRIT_CHANNEL')
+
+    data = format_telegram_text(text)
 
     # Открываем изображение в бинарном режиме
     with open(image_path, "rb") as image_file:
@@ -145,7 +160,10 @@ if __name__ == "__main__":
     image_file = os.path.join(script_directory, image)
 
     
-    data = "Telegram ctl. \n[https://dzen.ru/digital_spirit](https://dzen.ru/digital_spirit)"
+    data = "Telegram ctl. \nhttps://dzen.ru/digital_spirit"
     
     print(sendText2Channel(data))
     #print(sentArt2Channel(data, image_file))
+    #data = "Пример текста с пробелами и ссылкой: https://example.com"
+    #formatted_data = format_telegram_text(data)
+    #print(formatted_data)
