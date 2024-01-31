@@ -1,7 +1,7 @@
 import os
 import uuid
 import time
-from flask import Flask, render_template, request, url_for, flash, redirect, session
+from flask import Flask, render_template, request, url_for, flash, redirect, session, make_response
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 import telegram_ctl as a2tgm
@@ -106,6 +106,17 @@ def send_to_database(title, content, image_path, tgm_link, tph_link, vk_link):
     except Exception as e:
         flash(f"Error sending to Database: {e}")
         return None
+
+@app.route('/clear_session', methods=['GET'])
+def clear_session():
+    # Очищаем сессию
+    session.clear()
+
+    # Создаем пустую ответную куку с истекшим сроком действия
+    response = make_response(redirect(url_for('index')))
+    response.set_cookie('session', '', expires=0)
+
+    return response
 
 @app.route('/')
 def index():
@@ -215,9 +226,14 @@ def create_neuro():
             
             print(f"cleaned_image_path :: {cleaned_image_path}")
             send_to_database(session['post_title'], session['post_text'], cleaned_image_path, tgm_link, tph_link, vk_link)
+            
+            # Сброс сессии после успешной отправки
+            session.clear()
+
             return redirect(url_for('index'))
 
     return render_template('create_neuro.html', post_generated=session['post_generated'], post_title=session['post_title'], post_text=session['post_text'], post_image=session['post_image'], prepare_button_clicked=session['prepare_button_clicked'], send_button_clicked=session['send_button_clicked'])
+
 @app.route('/create_consolidated', methods=('GET', 'POST'))
 def create_consolidated():
     return render_template('under_construction.html')
