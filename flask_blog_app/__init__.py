@@ -30,6 +30,8 @@ current_script_directory = os.path.dirname(os.path.abspath(__file__))
 def get_neuro_image(promt):
     post_id = generate_post_id()
     print(f"post_id :: {post_id}")
+
+    # Получаем путь к директории загрузки из конфигурации приложения
     upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id))
     print(f"upload_folder :: {upload_folder}")
     os.makedirs(upload_folder, exist_ok=True)
@@ -38,12 +40,14 @@ def get_neuro_image(promt):
     filepath = os.path.join(upload_folder, filename)
     print(f"filepath :: {filepath}")
 
+    # Предположим, что у вас есть функция save_img в объекте neuro_image
     path = neuro_image.save_img(filepath, promt)
     print(path)
 
+    # Очищаем путь
     cleaned_path = path.lstrip('/').replace('flask_blog_app/', '')
-
     print(cleaned_path)
+
     return cleaned_path
 
 def get_neuro_text(promt):
@@ -170,29 +174,47 @@ def create_neuro():
         try:
             post_image = get_neuro_image(request.form['content_image'])
         except TypeError as e:
-            post_image = "static/images/default.jpeg"
+            post_image = DEFAULT_IMAGE_PATH
             flash('Не удалось сгенерировать изображение!')
 
         passkey = request.form['passkey']
         createkey = os.getenv('SITE_PASSKEY')
+        
+        if 'prepare_button' in request.form:
 
-        if passkey != createkey:
-            flash('Key is wrong!')
-            chKey=False
-        else:
-            chKey=True
-        if not post_title:
-            flash('Title is required!')
-            chTitle=False
-        else:
-            chTitle=True
 
-        if chKey and chTitle:
-            print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
-            post_generated = True     
-            return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image)
-        else:
-            flash("Somthing wrong!")
+            if passkey != createkey:
+                flash('Key is wrong!')
+                chKey=False
+            else:
+                chKey=True
+            if not post_title:
+                flash('Title is required!')
+                chTitle=False
+            else:
+                chTitle=True
+
+            if chKey and chTitle:
+                print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
+                post_generated = True     
+                return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image)
+            else:
+                flash("Somthing wrong!")
+        elif 'send_button' in request.form:
+            full_img_path = f'{current_script_directory}/{post_image}'
+            print(f"full_img_path :: {full_img_path}")
+
+            tgm_link = send_to_tgm_link(post_title, post_text, full_img_path)
+            tph_link = send_to_tph_link(post_title, post_text, full_img_path)
+            vk_link = send_to_vk_link(post_title, post_text, full_img_path)
+
+            print(f"post_image :: {post_image}")
+            cleaned_image_path = post_image.lstrip('/').replace('/static/', '')
+            
+            print(f"cleaned_image_path :: {cleaned_image_path}")
+            send_to_database(post_title, post_text, cleaned_image_path, tgm_link, tph_link, vk_link)
+            return redirect(url_for('index'))
+            
     return render_template('create_neuro.html')
 
 @app.route('/create_consolidated', methods=('GET', 'POST'))
