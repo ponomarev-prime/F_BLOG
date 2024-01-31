@@ -1,6 +1,8 @@
 import os
 import uuid
 import time
+import logging
+from logs import logger as base_logger
 from flask import Flask, render_template, request, url_for, flash, redirect, session, make_response
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
@@ -12,12 +14,23 @@ from flask import send_from_directory
 import gigachat_ctl as neuro_text
 import fusionbrain_ai_ctl as neuro_image
 
-
 from dotenv import load_dotenv
 load_dotenv('flask_blog_app/.env')
 
+logger = logging.getLogger(__name__)
+logger.handlers = base_logger.handlers
+logger.setLevel(base_logger.level)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET')
+
+# Log startup information
+logger.info("Flask application starting...")
+logger.info(f"Debug mode: {app.debug}")
+logger.info(f"Running on: {app.config['SERVER_NAME']}")
+
+if app.debug:
+    logger.info("Debug mode is enabled. Do not use in production!")
 
 UPLOAD_FOLDER = 'flask_blog_app/static/images'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -29,24 +42,24 @@ current_script_directory = os.path.dirname(os.path.abspath(__file__))
 
 def get_neuro_image(promt):
     post_id = generate_post_id()
-    print(f"post_id :: {post_id}")
+    logger.info(f"post_id :: {post_id}")
 
     # Получаем путь к директории загрузки из конфигурации приложения
     upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id))
-    print(f"upload_folder :: {upload_folder}")
+    logger.info(f"upload_folder :: {upload_folder}")
     os.makedirs(upload_folder, exist_ok=True)
 
     filename = "neuro_img.jpeg"
     filepath = os.path.join(upload_folder, filename)
-    print(f"filepath :: {filepath}")
+    logger.info(f"filepath :: {filepath}")
 
     # Предположим, что у вас есть функция save_img в объекте neuro_image
     path = neuro_image.save_img(filepath, promt)
-    print(path)
+    logger.info(path)
 
     # Очищаем путь
     cleaned_path = path.lstrip('/').replace('flask_blog_app/', '')
-    print(cleaned_path)
+    logger.info(cleaned_path)
 
     return cleaned_path
 
@@ -115,7 +128,7 @@ def clear_session():
     # Создаем пустую ответную куку с истекшим сроком действия
     response = make_response(redirect(url_for('index')))
     response.set_cookie('session', '', expires=0)
-
+    logger.info("Session is clear...")
     return response
 
 @app.route('/')
@@ -193,7 +206,7 @@ def create_neuro():
 
             session['post_title'] = request.form['title']
             session['post_text'] = get_neuro_text(request.form['content_promt'])
-            print(f"txt :: {session['post_text']}")
+            logger.info(f"txt :: {session['post_text']}")
 
             try:
                 session['post_image'] = get_neuro_image(request.form['content_image'])
@@ -209,22 +222,22 @@ def create_neuro():
             elif not session['post_title']:
                 flash('Title is required!')
             else:
-                print(f"title = {session['post_title']},\ncontent_promt = {session['post_text']},\ncontent_image = {session['post_image']},\npasskey = {passkey}")
+                logger.info(f"title = {session['post_title']},\ncontent_promt = {session['post_text']},\ncontent_image = {session['post_image']},\npasskey = {passkey}")
                 session['post_generated'] = True
         elif action == 'send' and not session['send_button_clicked']:
             session['send_button_clicked'] = True
 
             full_img_path = f"{current_script_directory}/{session['post_image']}"
-            print(f"full_img_path :: {full_img_path}")
+            logger.info(f"full_img_path :: {full_img_path}")
 
             tgm_link = send_to_tgm_link(session['post_title'], session['post_text'], full_img_path)
             tph_link = send_to_tph_link(session['post_title'], session['post_text'], full_img_path)
             vk_link = send_to_vk_link(session['post_title'], session['post_text'], full_img_path)
 
-            print(f"post_image :: {session['post_image']}")
+            logger.info(f"post_image :: {session['post_image']}")
             cleaned_image_path = session['post_image'].lstrip('/').replace('static/', '')
             
-            print(f"cleaned_image_path :: {cleaned_image_path}")
+            logger.info(f"cleaned_image_path :: {cleaned_image_path}")
             send_to_database(session['post_title'], session['post_text'], cleaned_image_path, tgm_link, tph_link, vk_link)
             
             # Сброс сессии после успешной отправки

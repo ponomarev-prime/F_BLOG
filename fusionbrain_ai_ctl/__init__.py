@@ -5,8 +5,13 @@ import os
 import io, base64
 from PIL import Image
 from dotenv import load_dotenv
+import logging
 
 load_dotenv('flask_blog_app/.env')
+
+# Инициализация логгера в другом файле
+logger = logging.getLogger(__name__)
+logger.info("Логгер в fusionbrain_ai_ctl инициирован.")
 
 class Text2ImageAPI:
 
@@ -55,13 +60,13 @@ def create_image_by_text(text):
     API_KEY = os.getenv('FUSION_API_KEY')
     SECRET_KEY = os.getenv('FUSION_SECRET_KEY')
 
-    print(f"crt img :: {text}")
+    logger.info(f"crt img :: {text}")
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/', API_KEY, SECRET_KEY)
     model_id = api.get_model()
     uuid = api.generate(text, model_id)
     images = api.check_generation(uuid)
     img = Image.open(io.BytesIO(base64.decodebytes(bytes(images[0], "utf-8"))))
-    print(f"fff :: {img}")
+    logger.info(f"fff :: {img}")
     return img
 
 def save_img(path, gen_phrase):
