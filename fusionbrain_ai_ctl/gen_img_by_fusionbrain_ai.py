@@ -62,7 +62,7 @@ def create_image_by_text(text, out_file):
     img.save(out_file)
 
 if __name__ == '__main__':
-    gen_phrase = "Cleat summer sky in the morning"
+    gen_phrase = "Clear summer sky in the morning"
     output_image_file = 'gen_img.jpeg'
     current_script_directory = os.path.dirname(os.path.abspath(__file__))
     path = f"{current_script_directory}/{output_image_file}"
