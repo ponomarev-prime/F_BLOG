@@ -5,7 +5,8 @@ import os
 import io, base64
 from PIL import Image
 from dotenv import load_dotenv
-load_dotenv('fusionbrain_ai_ctl/fai.env')
+
+load_dotenv('flask_blog_app/.env')
 
 class Text2ImageAPI:
 

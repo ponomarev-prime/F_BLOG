@@ -3,7 +3,7 @@ import requests
 from gigachat import GigaChat
 from dotenv import load_dotenv
 
-load_dotenv('gigachat_ctl/gigachat.env')
+load_dotenv('flask_blog_app/.env')
 
 TOKEN = os.getenv('SBER_GIGACHAT')
 
