@@ -2,7 +2,16 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
+import logging
+from logs import logger as base_logger
+
 load_dotenv('flask_blog_app/.env')
+
+logger = logging.getLogger(__name__)
+logger.handlers = base_logger.handlers
+logger.setLevel(base_logger.level)
+
+logger.info("Логгер в telegram_ctl инициирован.")
 
 TOKEN = os.getenv('TG_TOKEN')
 chat_id = os.getenv('ID_DIGITAL_SPIRIT_CHANNEL')
@@ -72,7 +81,7 @@ def sentArt2Channel(data, image_path):
     # Формирование URL
     message_url = f'https://t.me/{username}/{message_id}'
     
-    print(message_url)
+    logger.info(f"message_url :: {message_url}")
     return message_url
 
 

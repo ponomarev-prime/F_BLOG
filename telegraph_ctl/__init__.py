@@ -4,9 +4,17 @@ import requests
 from html import escape
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-load_dotenv('flask_blog_app/.env')
 from telegraph import Telegraph
+import logging
+from logs import logger as base_logger
 
+load_dotenv('flask_blog_app/.env')
+
+logger = logging.getLogger(__name__)
+logger.handlers = base_logger.handlers
+logger.setLevel(base_logger.level)
+
+logger.info("Логгер в telegraph_ctl инициирован.")
 
 def read_html_file(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -78,12 +86,12 @@ def send_html2telegraph(html_path):
     elif 'ok' in data and 'error' in data and data['ok'] is False and data['error'] == 'ACCESS_TOKEN_INVALID':
         # Обработка ошибки ACCESS_TOKEN_INVALID
         art_url = None
-        print("Error: ACCESS_TOKEN_INVALID")
+        logger.info("Error: ACCESS_TOKEN_INVALID")
         # Дополнительные действия по обработке ошибки, если необходимо
     else:
         # Обработка других случаев, если ключи 'result' или 'url' не найдены
         art_url = None  # или другое значение по умолчанию
-        print("Unexpected structure in data")
+        logger.info("Unexpected structure in data")
     
     return art_url
 
@@ -128,7 +136,7 @@ def send_art2telegraph(title, text, image_path):
 
     # Получение ссылки на созданную статью
     article_url = 'https://telegra.ph/{}'.format(article['path'])
-    print(article_url)
+    logger.info(article_url)
     return article_url 
 
 

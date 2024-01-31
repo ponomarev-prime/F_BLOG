@@ -2,8 +2,17 @@ import requests
 import os
 import json
 from dotenv import load_dotenv
-load_dotenv('flask_blog_app/.env')
 from vkontakte_ctl.upload_photo2vkontakte import add_photo2album as ph2a
+import logging
+from logs import logger as base_logger
+
+load_dotenv('flask_blog_app/.env')
+
+logger = logging.getLogger(__name__)
+logger.handlers = base_logger.handlers
+logger.setLevel(base_logger.level)
+
+logger.info("Логгер в vkontakte_ctl инициирован.")
 
 token = os.getenv('VK_USER_TOKEN')
 owner_id = os.getenv('VK_OWNER_USER_ID')
