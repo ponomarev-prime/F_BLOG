@@ -11,7 +11,7 @@ def create_text_by_text(question_phrase):
     with GigaChat(credentials=TOKEN, verify_ssl_certs=True) as giga:
         response = giga.chat(question_phrase) # giga chat отдаёт ещё и изображение?
         response_text = response.choices[0].message.content
-        result = response_text.split('\n')[0]
+        result = response_text.split('<')[0]
         return result
 
 
