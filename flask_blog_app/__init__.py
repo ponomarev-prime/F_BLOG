@@ -165,6 +165,9 @@ def create_neuro():
     post_title = ''
     post_text = ''
     post_image = ''
+    
+    prepare_button_clicked = False
+    send_button_clicked = False
 
     if request.method == 'POST':
         post_title = request.form['title']
@@ -180,8 +183,8 @@ def create_neuro():
         passkey = request.form['passkey']
         createkey = os.getenv('SITE_PASSKEY')
         
-        if 'prepare_button' in request.form:
-
+        if 'prepare_button' in request.form and not prepare_button_clicked:
+            prepare_button_clicked = True
 
             if passkey != createkey:
                 flash('Key is wrong!')
@@ -197,10 +200,13 @@ def create_neuro():
             if chKey and chTitle:
                 print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
                 post_generated = True     
-                return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image)
+                return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image, prepare_button_clicked=prepare_button_clicked, send_button_clicked=send_button_clicked)
             else:
                 flash("Somthing wrong!")
-        elif 'send_button' in request.form:
+            
+        if 'send_button' in request.form:
+            send_button_clicked = True
+
             full_img_path = f'{current_script_directory}/{post_image}'
             print(f"full_img_path :: {full_img_path}")
 
@@ -209,13 +215,13 @@ def create_neuro():
             vk_link = send_to_vk_link(post_title, post_text, full_img_path)
 
             print(f"post_image :: {post_image}")
-            cleaned_image_path = post_image.lstrip('/').replace('/static/', '')
+            cleaned_image_path = post_image.lstrip('/').replace('static/', '')
             
             print(f"cleaned_image_path :: {cleaned_image_path}")
             send_to_database(post_title, post_text, cleaned_image_path, tgm_link, tph_link, vk_link)
             return redirect(url_for('index'))
             
-    return render_template('create_neuro.html')
+    return render_template('create_neuro.html', prepare_button_clicked=prepare_button_clicked, send_button_clicked=send_button_clicked)
 
 @app.route('/create_consolidated', methods=('GET', 'POST'))
 def create_consolidated():
