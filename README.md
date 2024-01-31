@@ -179,3 +179,7 @@ typing_extensions  4.8.0				      |	typing_extensions  4.9.0
 urllib3  2.1.0						      |	urllib3  2.2.0
 Werkzeug  3.0.1							Werkzeug  3.0.1
 ```
+
+### git
+
+git clone --single-branch --depth 1 https://github.com/ponomarev-prime/F_BLOG.git -b main 
