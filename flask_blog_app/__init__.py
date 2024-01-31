@@ -1,7 +1,7 @@
 import os
 import uuid
 import time
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import Flask, render_template, request, url_for, flash, redirect, session
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 import telegram_ctl as a2tgm
@@ -161,68 +161,63 @@ def create():
 
 @app.route('/create_neuro', methods=('GET', 'POST'))
 def create_neuro():
-    post_generated = False
-    post_title = ''
-    post_text = ''
-    post_image = ''
-    
-    prepare_button_clicked = False
-    send_button_clicked = False
+    if 'post_generated' not in session:
+        session['post_generated'] = False
+    if 'post_title' not in session:
+        session['post_title'] = ''
+    if 'post_text' not in session:
+        session['post_text'] = ''
+    if 'post_image' not in session:
+        session['post_image'] = ''
+    if 'prepare_button_clicked' not in session:
+        session['prepare_button_clicked'] = False
+    if 'send_button_clicked' not in session:
+        session['send_button_clicked'] = False
 
     if request.method == 'POST':
-        post_title = request.form['title']
-        post_text = get_neuro_text(request.form['content_promt'])
-        print(f"txt :: {post_text}")
+        action = request.form.get('action')
 
-        try:
-            post_image = get_neuro_image(request.form['content_image'])
-        except TypeError as e:
-            post_image = DEFAULT_IMAGE_PATH
-            flash('Не удалось сгенерировать изображение!')
+        if action == 'prepare' and not session['prepare_button_clicked']:
+            session['prepare_button_clicked'] = True
 
-        passkey = request.form['passkey']
-        createkey = os.getenv('SITE_PASSKEY')
-        
-        if 'prepare_button' in request.form and not prepare_button_clicked:
-            prepare_button_clicked = True
+            session['post_title'] = request.form['title']
+            session['post_text'] = get_neuro_text(request.form['content_promt'])
+            print(f"txt :: {session['post_text']}")
+
+            try:
+                session['post_image'] = get_neuro_image(request.form['content_image'])
+            except TypeError as e:
+                session['post_image'] = DEFAULT_IMAGE_PATH
+                flash('Не удалось сгенерировать изображение!')
+
+            passkey = request.form['passkey']
+            createkey = os.getenv('SITE_PASSKEY')
 
             if passkey != createkey:
                 flash('Key is wrong!')
-                chKey=False
-            else:
-                chKey=True
-            if not post_title:
+            elif not session['post_title']:
                 flash('Title is required!')
-                chTitle=False
             else:
-                chTitle=True
+                print(f"title = {session['post_title']},\ncontent_promt = {session['post_text']},\ncontent_image = {session['post_image']},\npasskey = {passkey}")
+                session['post_generated'] = True
+        elif action == 'send' and not session['send_button_clicked']:
+            session['send_button_clicked'] = True
 
-            if chKey and chTitle:
-                print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
-                post_generated = True     
-                return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image, prepare_button_clicked=prepare_button_clicked, send_button_clicked=send_button_clicked)
-            else:
-                flash("Somthing wrong!")
-            
-        if 'send_button' in request.form:
-            send_button_clicked = True
-
-            full_img_path = f'{current_script_directory}/{post_image}'
+            full_img_path = f"{current_script_directory}/{session['post_image']}"
             print(f"full_img_path :: {full_img_path}")
 
-            tgm_link = send_to_tgm_link(post_title, post_text, full_img_path)
-            tph_link = send_to_tph_link(post_title, post_text, full_img_path)
-            vk_link = send_to_vk_link(post_title, post_text, full_img_path)
+            tgm_link = send_to_tgm_link(session['post_title'], session['post_text'], full_img_path)
+            tph_link = send_to_tph_link(session['post_title'], session['post_text'], full_img_path)
+            vk_link = send_to_vk_link(session['post_title'], session['post_text'], full_img_path)
 
-            print(f"post_image :: {post_image}")
-            cleaned_image_path = post_image.lstrip('/').replace('static/', '')
+            print(f"post_image :: {session['post_image']}")
+            cleaned_image_path = session['post_image'].lstrip('/').replace('static/', '')
             
             print(f"cleaned_image_path :: {cleaned_image_path}")
-            send_to_database(post_title, post_text, cleaned_image_path, tgm_link, tph_link, vk_link)
+            send_to_database(session['post_title'], session['post_text'], cleaned_image_path, tgm_link, tph_link, vk_link)
             return redirect(url_for('index'))
-            
-    return render_template('create_neuro.html', prepare_button_clicked=prepare_button_clicked, send_button_clicked=send_button_clicked)
 
+    return render_template('create_neuro.html', post_generated=session['post_generated'], post_title=session['post_title'], post_text=session['post_text'], post_image=session['post_image'], prepare_button_clicked=session['prepare_button_clicked'], send_button_clicked=session['send_button_clicked'])
 @app.route('/create_consolidated', methods=('GET', 'POST'))
 def create_consolidated():
     return render_template('under_construction.html')
