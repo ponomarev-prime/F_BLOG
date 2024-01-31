@@ -140,4 +140,42 @@ curl -X POST -d "title=Hello from cURL" -d "content=cURL POST запрос" http
 ![](.gitcontent/curl_post_x.png)
 
 
----
+# Tips
+
+### diff
+
+```
+(.venv) $ diff <(cat requirements.txt | tr  "\>\=" " ")  <(cat requirements.stable.txt | tr  "\=\=" " ") -y
+annotated-types  0.6.0						annotated-types  0.6.0
+anyio  4.1.0						      |	anyio  4.2.0
+beautifulsoup4  4.12.2					      |	beautifulsoup4  4.12.3
+blinker  1.7.0							blinker  1.7.0
+certifi  2023.11.17						certifi  2023.11.17
+charset-normalizer  3.3.2					charset-normalizer  3.3.2
+click  8.1.7							click  8.1.7
+colorama  0.4.6							colorama  0.4.6
+exceptiongroup  1.2.0						exceptiongroup  1.2.0
+Flask  3.0.0						      |	Flask  3.0.1
+gigachat  0.1.8						      |	gigachat  0.1.13
+h11  0.14.0							h11  0.14.0
+httpcore  1.0.2							httpcore  1.0.2
+httpx  0.25.2						      |	httpx  0.26.0
+idna  3.4						      |	idna  3.6
+itsdangerous  2.1.2						itsdangerous  2.1.2
+Jinja2  3.1.2						      |	Jinja2  3.1.3
+Markdown  3.5.1						      |	Markdown  3.5.2
+MarkupSafe  2.1.3					      |	MarkupSafe  2.1.4
+mysql-connector-python  8.2.0				      |	mysql-connector-python  8.3.0
+Pillow  10.1.0						      |	pillow  10.2.0
+protobuf  4.21.12					      |	protobuf  4.25.2
+pydantic  2.5.2						      |	pydantic  2.6.0
+pydantic_core  2.14.5					      |	pydantic_core  2.16.1
+python-dotenv  1.0.0					      |	python-dotenv  1.0.1
+requests  2.31.0						requests  2.31.0
+sniffio  1.3.0							sniffio  1.3.0
+soupsieve  2.5							soupsieve  2.5
+telegraph  2.2.0						telegraph  2.2.0
+typing_extensions  4.8.0				      |	typing_extensions  4.9.0
+urllib3  2.1.0						      |	urllib3  2.2.0
+Werkzeug  3.0.1							Werkzeug  3.0.1
+```
