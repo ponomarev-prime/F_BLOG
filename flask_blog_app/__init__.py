@@ -161,10 +161,13 @@ def create_neuro():
         else:
             chTitle=True
 
-        print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
-        post_generated = True
-        
-    return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image)
+        if chKey and chTitle:
+            print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
+            post_generated = True     
+            return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image)
+        else:
+            flash("Somthing wrong!")
+    return render_template('create_neuro.html')
 
 @app.route('/create_consolidated', methods=('GET', 'POST'))
 def create_consolidated():
