@@ -1,28 +1,49 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{% block title %} Create a New Post by neuro{% endblock %}</h1>
+<h1>{% block title %} Создать пост используя нейросеть{% endblock %}</h1>
 
 <form method="post">
     <div class="form-group">
-        <label for="title">Title</label>
+        <label for="title">Заголовок поста</label>
+        <small style="color: darkblue;">Просто статический заголовок</small>
         <input type="text" name="title"
                placeholder="Post title" class="form-control"
                value="{{ request.form['title'] }}"></input>
     </div>
 
     <div class="form-group">
-        <label for="content">Content</label>
-        <textarea name="content" placeholder="Post content"
-                  class="form-control">{{ request.form['content'] }}</textarea>
+        <label for="content_promt">Промт для текста</label>
+        <small style="color: darkblue;">То на основе чего gigachat сгенерирует текст</small>
+        <textarea name="content_promt" placeholder="Post content_promt"
+                  class="form-control">{{ request.form['content_promt'] }}</textarea>
     </div>
+
     <div class="form-group">
-        <label for="content">Pass</label>
-        <textarea name="passkey" placeholder="Secret key"
-                  class="form-control">{{ request.form['passkey'] }}</textarea>
+        <label for="content_image">Промт для изображения</label>
+        <small style="color: darkblue;">То на основе чего fusionbrain сгенерирует изображения</small>
+        <textarea name="content_image" placeholder="Post content_image"
+                  class="form-control">{{ request.form['content_image'] }}</textarea>
     </div>
+
     <div class="form-group">
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <label for="content">Код</label>
+        <input type="password" name="passkey" placeholder="Secret key" class="form-control" style="width: 200px;">
+    </div> 
+    <div class="form-group">
+        <button type="submit" class="btn btn-warning">Подготовить</button>
     </div>
 </form>
+
+{% if post_generated %}
+<hr>
+    <div class="post">
+        <h2>{{ post_title }}</h2>
+        <img src="{{post_image}}" alt="Generated Image" style="max-width: 100%; max-height: 800px;">
+        <p>{{ post_text }}</p>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Отправить</button>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}

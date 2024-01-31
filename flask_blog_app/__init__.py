@@ -9,6 +9,7 @@ import telegraph_ctl as a2tph
 import vkontakte_ctl as a2vk
 from db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
 from flask import send_from_directory
+import gigachat_ctl as giga_ch
 
 
 from dotenv import load_dotenv
@@ -24,6 +25,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 DEFAULT_IMAGE_PATH = 'images/default.jpeg'
 
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
+
+def get_neuro_text(promt):
+    result = giga_ch.create_text_by_text(promt)
+    return result
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -132,7 +137,34 @@ def create():
 
 @app.route('/create_neuro', methods=('GET', 'POST'))
 def create_neuro():
-    return render_template('under_construction.html')
+    post_generated = False
+    post_title = ''
+    post_text = ''
+    post_image = ''
+
+    if request.method == 'POST':
+        post_title = request.form['title']
+        post_text = get_neuro_text(request.form['content_promt'])
+        post_image = request.form['content_image']
+        post_image = "static/images/default.jpeg"
+        passkey = request.form['passkey']
+        createkey = os.getenv('SITE_PASSKEY')
+
+        if passkey != createkey:
+            flash('Key is wrong!')
+            chKey=False
+        else:
+            chKey=True
+        if not post_title:
+            flash('Title is required!')
+            chTitle=False
+        else:
+            chTitle=True
+
+        print(f"title = {post_title},\ncontent_promt = {post_text},\ncontent_image = {post_image},\npasskey = {passkey}")
+        post_generated = True
+        
+    return render_template('create_neuro.html', post_generated=post_generated, post_title=post_title, post_text=post_text, post_image=post_image)
 
 @app.route('/create_consolidated', methods=('GET', 'POST'))
 def create_consolidated():
