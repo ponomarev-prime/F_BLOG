@@ -9,7 +9,8 @@ import telegraph_ctl as a2tph
 import vkontakte_ctl as a2vk
 from db_utils import insert_post, update_post, delete_post, get_post, get_all_posts
 from flask import send_from_directory
-import gigachat_ctl as giga_ch
+import gigachat_ctl as neuro_text
+import fusionbrain_ai_ctl as neuro_image
 
 
 from dotenv import load_dotenv
@@ -26,8 +27,27 @@ DEFAULT_IMAGE_PATH = 'images/default.jpeg'
 
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
 
+def get_neuro_image(promt):
+    post_id = generate_post_id()
+    print(f"post_id :: {post_id}")
+    upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(post_id))
+    print(f"upload_folder :: {upload_folder}")
+    os.makedirs(upload_folder, exist_ok=True)
+
+    filename = "neuro_img.jpeg"
+    filepath = os.path.join(upload_folder, filename)
+    print(f"filepath :: {filepath}")
+
+    path = neuro_image.save_img(filepath, promt)
+    print(path)
+
+    cleaned_path = path.lstrip('/').replace('flask_blog_app/', '')
+
+    print(cleaned_path)
+    return cleaned_path
+
 def get_neuro_text(promt):
-    result = giga_ch.create_text_by_text(promt)
+    result = neuro_text.create_text_by_text(promt)
     return result
 
 def allowed_file(filename):
@@ -145,8 +165,14 @@ def create_neuro():
     if request.method == 'POST':
         post_title = request.form['title']
         post_text = get_neuro_text(request.form['content_promt'])
-        post_image = request.form['content_image']
-        post_image = "static/images/default.jpeg"
+        print(f"txt :: {post_text}")
+
+        try:
+            post_image = get_neuro_image(request.form['content_image'])
+        except TypeError as e:
+            post_image = "static/images/default.jpeg"
+            flash('Не удалось сгенерировать изображение!')
+
         passkey = request.form['passkey']
         createkey = os.getenv('SITE_PASSKEY')
 

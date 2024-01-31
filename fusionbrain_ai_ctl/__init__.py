@@ -50,16 +50,23 @@ class Text2ImageAPI:
             attempts -= 1
             time.sleep(delay)
 
-def create_image_by_text(text, out_file):
+def create_image_by_text(text):
     API_KEY = os.getenv('FUSION_API_KEY')
     SECRET_KEY = os.getenv('FUSION_SECRET_KEY')
 
+    print(f"crt img :: {text}")
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/', API_KEY, SECRET_KEY)
     model_id = api.get_model()
     uuid = api.generate(text, model_id)
     images = api.check_generation(uuid)
     img = Image.open(io.BytesIO(base64.decodebytes(bytes(images[0], "utf-8"))))
-    img.save(out_file)
+    print(f"fff :: {img}")
+    return img
+
+def save_img(path, gen_phrase):
+    img = create_image_by_text(gen_phrase)
+    img.save(path)
+    return path
 
 if __name__ == '__main__':
     gen_phrase = "Clear summer sky in the morning"
@@ -67,4 +74,5 @@ if __name__ == '__main__':
     current_script_directory = os.path.dirname(os.path.abspath(__file__))
     path = f"{current_script_directory}/{output_image_file}"
     print(path)
-    create_image_by_text(gen_phrase, path)
+    img = create_image_by_text(gen_phrase)
+    img.save(path)
